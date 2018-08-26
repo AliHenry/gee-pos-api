@@ -19,12 +19,29 @@ class LoginController extends Controller
 
             $user = Auth::user();
 
-            $success['token'] = $user->createToken('oauth_clients')->accessToken;
             $success['success'] = true;
+            $success['access_token'] = $user->createToken('oauth_clients')->accessToken;
+            $success['user'] = $user;
 
             return response()->json(['response' => $success], $this->successStatus);
         }else{
             return response()->json(['error' => 'Unauthorised', 'success' => false], 401);
         }
+    }
+
+    public function user(){
+
+        if (Auth::user()){
+            $user = Auth::user();
+
+            $success['success'] = true;
+            $success['user'] = $user;
+
+            return response()->json(['response' => $success], $this->successStatus);
+        }else{
+            return response()->json(['error' => 'Unauthorised', 'success' => false], 401);
+        }
+
+
     }
 }
