@@ -9,6 +9,8 @@ use Webpatser\Uuid\Uuid;
 
 class OutletController extends Controller
 {
+    public $successStatus = 200;
+
     public function create(Request $request){
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
@@ -31,5 +33,26 @@ class OutletController extends Controller
         $outlet->save();
 
         return $outlet;
+    }
+
+    public function checkCode(Request $request){
+        $validator = Validator::make($request->all(), [
+            'code' => 'required|integer|min:8',
+        ]);
+
+        if($validator->fails()){
+            return response()->json(['error' => $validator->errors()], 401);
+        }
+
+        $outlet = Outlet::where('code', $request->code)->first();
+        if (!$outlet){
+            return response()->json(['error' =>['code' => ['Outlet not found']]], 404);
+        }
+
+        $success['success'] = true;
+        $success['outlet'] = $outlet;
+
+        return response()->json(['response' => $success], $this->successStatus);
+
     }
 }

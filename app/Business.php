@@ -8,4 +8,6 @@ class Business extends Model
 {
     protected $table = 'business';
 
+    protected $primaryKey = 'biz_uuid';
+
 }

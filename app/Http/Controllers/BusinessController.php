@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Business;
 use App\Outlet;
+use App\Role;
 use function GuzzleHttp\Psr7\build_query;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -66,7 +67,22 @@ class BusinessController extends Controller
         $outlet->code = $this->ranNum();
         $outlet->save();
 
+        $outlet->role = $this->addRole($outlet);
+
         return $outlet;
+    }
+
+    public function addRole($outlet){
+        $user = Auth::user();
+        $role = Role::where('name', 'superadministrator')->first();
+
+        return $user->role()->attach($role->id, ['user_type' => 'App\User','outlet_uuid' => $outlet->outlet_uuid]);
+    }
+
+    public function removeRole($data){
+        $user = Auth::user();
+        $role = Role::find(1);
+        return $user->detachRole($role);
     }
 
     private function ranNum(){
