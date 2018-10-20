@@ -92,6 +92,7 @@ class ProductController extends Controller
 
         $product->sold_quantity = $this->product_sold_count($product->prod_uuid);
         $product->sold_amount = $this->product_sold_amount($product->prod_uuid);
+        $product->pro_likes = $this->product_likes($product->prod_uuid);
 
         $success['success'] = true;
         $success['product'] = $product;
@@ -144,6 +145,14 @@ class ProductController extends Controller
 
     public function product_sold_count($prodId){
         $count = DB::table('transaction_product')
+            ->where('prod_uuid', $prodId)
+            ->count();
+
+        return $count;
+    }
+
+    public function product_likes($prodId){
+        $count = DB::table('product_likes')
             ->where('prod_uuid', $prodId)
             ->count();
 

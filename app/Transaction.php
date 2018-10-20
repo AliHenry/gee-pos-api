@@ -36,4 +36,11 @@ class Transaction extends Model
         return $this->hasMany(Transaction::class, 'trans_uuid', 'trans_uuid');
     }
 
+    public function sales_person()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+
+
 }

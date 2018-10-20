@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Torann\GeoIP\GeoIP;
 
 class LoginController extends Controller
 {
@@ -16,6 +17,7 @@ class LoginController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function login(){
+
         if(Auth::attempt(['email' => \request('email'), 'password' => \request('password')])){
 
             $user = Auth::user();

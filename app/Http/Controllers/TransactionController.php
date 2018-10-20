@@ -58,21 +58,7 @@ class TransactionController extends Controller
 
         $transaction->trans_uuid = $input['trans_uuid'];
         if ($transaction) {
-            foreach ($input['items'] as $item) {
-
-                $products = Product::where('prod_uuid', $item['prod_uuid'])->first();
-                if($products->quantity >= $item['quantity']){
-                    $products->quantity = $products->quantity - $item['quantity'];
-                    $products->save();
-                    $transaction->products()->attach($item['prod_uuid'],
-                        [
-                            'outlet_uuid' => $input['outlet_uuid'],
-                            'total' => $item['price'],
-                            'quantity' => $item['quantity']
-                        ]
-                    );
-                }
-            }
+            $this->insert_trans_productions($transaction, $input['items']);
         }
         $transaction->products;
         $success['success'] = true;
@@ -84,24 +70,78 @@ class TransactionController extends Controller
 
     public function all(Request $request)
     {
-        $search = $request->get('search');
+        $validator = Validator::make($request->all(), [
+            'outlet_uuid' => 'required|string',
+        ]);
 
-        $transaction = [];
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 401);
+        }
+
+        $search = $request->get('search');
+        $startDate = $request->get('startDate');
+        $endDate = $request->get('endDate');
+
+        $transactions = Transaction::where('outlet_uuid', $request->outlet_uuid)
+            ->with('products')
+            ->with('sales_person');
 
         if ($search) {
-            $transaction = Transaction::where('outlet_uuid', $request->outlet_uuid)
-                ->where('trans_uuid', 'like', "%" . $search . "%")
-                ->with('products')
-                ->get();
-        } else {
-            $transaction = Transaction::where('outlet_uuid', $request->outlet_uuid)
-                ->with('products')
-                ->get();
+            $transactions->where('trans_uuid', 'like', "%" . $search . "%")
+                ->orwhere('total', 'like', "%" . $search . "%");
+        }
+        if ($startDate && $endDate) {
+            $transactions->whereBetween('created_at', [$startDate, $endDate]);
+        }
+
+        $success['success'] = true;
+        $success['success'] = $transactions->count();
+        $success['transactions'] = $transactions->get();
+
+        return response()->json(['response' => $success], $this->successStatus);
+    }
+
+    public function get(Request $request, $uuid)
+    {
+        $validator = Validator::make($request->all(), [
+            'outlet_uuid' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 401);
+        }
+
+        $transaction = Transaction::where('outlet_uuid', $request->outlet_uuid)
+            ->where('trans_uuid', $uuid)
+            ->with('products')
+            ->with('sales_person')
+            ->first();
+
+        if (!$transaction){
+            return response()->json(['error' => ['message' => ['Transaction not found']]], 404);
         }
 
         $success['success'] = true;
         $success['transaction'] = $transaction;
 
         return response()->json(['response' => $success], $this->successStatus);
+    }
+
+    private function insert_trans_productions(Transaction $transaction, $items){
+        foreach ($items as $item) {
+
+            $products = Product::where('prod_uuid', $item['prod_uuid'])->first();
+            if($products->quantity >= $item['quantity']){
+                $products->quantity = $products->quantity - $item['quantity'];
+                $products->save();
+                $transaction->products()->attach($item['prod_uuid'],
+                    [
+                        'outlet_uuid' => $products->outlet_uuid,
+                        'total' => $item['price'],
+                        'quantity' => $item['quantity']
+                    ]
+                );
+            }
+        }
     }
 }

@@ -18,12 +18,6 @@ Route::post('auth/register', 'RegisterController@register');
 Route::get('auth/user', 'LoginController@user');
 Route::get('check-outlet', 'OutletController@checkCode');
 
-Route::post('customer', 'CustomerController@create');
-
-Route::group(['middleware' => 'auth:customer-api'], function () {
-    Route::get('customer', 'CustomerController@all');
-});
-
 Route::group(['middleware' => 'auth:api'], function () {
 
     Route::get('auth/user', 'LoginController@user');
@@ -55,6 +49,8 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     Route::get('transaction', 'TransactionController@all');
 
+    Route::get('transaction/{uuid}', 'TransactionController@get');
+
 
     Route::post('user', 'UserController@create');
 
@@ -63,6 +59,11 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('user/{uuid}', 'UserController@get');
 
     Route::get('role', 'RoleController@all');
+
+
+    Route::post('setting', 'OutletSettingController@create');
+
+    Route::post('upload', 'OutletSettingController@upload');
 
 
 });

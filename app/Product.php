@@ -31,4 +31,9 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class, 'cate_uuid');
     }
+
+    public function likes()
+    {
+        return $this->belongsToMany(Customer::class, 'product_likes','prod_uuid','cus_uuid');
+    }
 }
