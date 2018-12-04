@@ -40,6 +40,11 @@ class Customer extends Authenticatable implements JWTSubject
         return $this->belongsToMany(Outlet::class, 'outlet_followers', 'cus_uuid', 'outlet_uuid');
     }
 
+    public function favorites()
+    {
+        return $this->belongsToMany(Product::class, 'user_favorite', 'cus_uuid', 'prod_uuid');
+    }
+
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *

@@ -15,13 +15,27 @@ use Illuminate\Http\Request;
 
 
 
-Route::post('customer', 'CustomerController@create');
-Route::post('customer/login', 'CustomerController@login');
+Route::post('register', 'CustomerController@create');
+Route::post('login', 'CustomerController@login');
+Route::get('product', 'CustomerController@allProduct');
+
 
 Route::group(['middleware' => 'jwt.auth'], function () {
-    Route::get('customer', 'CustomerController@all');
+    //Route::get('customer', 'CustomerController@all');
+
+    Route::get('user', 'CustomerController@customer');
 
     Route::post('like-product', 'CustomerController@likeProduct');
 
+
+    Route::post('favorite', 'CustomerController@addFavorite');
+    Route::get('favorite', 'CustomerController@getFavorite');
+
+
     Route::post('follow-outlet', 'CustomerController@followOutlet');
+    Route::get('following', 'CustomerController@following');
+
+
+    Route::post('logout', 'CustomerController@logout');
+
 });

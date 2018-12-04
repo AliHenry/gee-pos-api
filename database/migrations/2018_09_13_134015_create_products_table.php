@@ -17,6 +17,7 @@ class CreateProductsTable extends Migration
             $table->uuid('prod_uuid');
             $table->uuid('cate_uuid');
             $table->uuid('outlet_uuid');
+            $table->string('avatar')->nullable();
             $table->string('name');
             $table->text('description')->nullable();
             $table->unsignedInteger('quantity')->default(0);

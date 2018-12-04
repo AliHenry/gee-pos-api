@@ -8,6 +8,7 @@ use App\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Validator;
+use phpDocumentor\Reflection\DocBlock\Tags\Uses;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Webpatser\Uuid\Uuid;
 
@@ -55,18 +56,41 @@ class CustomerController extends Controller
 
     public function login(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|email',
+            'password' => 'required|min:6',
+        ]);
+
+        if($validator->fails()){
+            return response()->json(['error' => $validator->errors()], 401);
+        }
+
         $credentials = $request->only('email', 'password');
         if ( ! $token = JWTAuth::attempt($credentials)) {
-            return response([
-                'status' => 'error',
-                'error' => 'invalid.credentials',
-                'msg' => 'Invalid Credentials.'
-            ], 400);
+
+            return response()->json(['error' => 'Invalid Credentials', 'success' => false], 401);
         }
-        return response([
-            'status' => 'success',
-            'token' => $token
-        ]);
+
+
+        $success['success'] = true;
+        $success['access_token'] = $token;
+
+        return response()->json(['response' => $success], $this->successStatus);
+    }
+
+    public function customer(){
+
+        if (JWTAuth::parseToken()->toUser()){
+            $customer = JWTAuth::parseToken()->toUser();
+
+            $success['success'] = true;
+            $success['customer'] = $customer;
+
+            return response()->json(['response' => $success], $this->successStatus);
+        }else{
+            return response()->json(['error' => 'Unauthorised', 'success' => false], 401);
+        }
+
     }
 
     public function all(){
@@ -95,7 +119,7 @@ class CustomerController extends Controller
 
             $user->product_likes;
             $success['success'] = true;
-            $success['user'] = $user;
+            $success['customer'] = $user;
 
             return response()->json(['response' => $success], $this->successStatus);
         }
@@ -104,7 +128,7 @@ class CustomerController extends Controller
 
         $user->product_likes;
         $success['success'] = true;
-        $success['user'] = $user;
+        $success['customer'] = $user;
 
         return response()->json(['response' => $success], $this->successStatus);
 
@@ -132,7 +156,7 @@ class CustomerController extends Controller
 
             $user->follow_outlet;
             $success['success'] = true;
-            $success['user'] = $user;
+            $success['customer'] = $user;
 
             return response()->json(['response' => $success], $this->successStatus);
         }
@@ -141,9 +165,67 @@ class CustomerController extends Controller
 
         $user->follow_outlet;
         $success['success'] = true;
-        $success['user'] = $user;
+        $success['customer'] = $user;
 
         return response()->json(['response' => $success], $this->successStatus);
 
+    }
+
+    public function following()
+    {
+        $user = JWTAuth::parseToken()->toUser();
+
+        $user->follow_outlet;
+        $success['success'] = true;
+        $success['customer'] = $user;
+        return response()->json(['response' => $success], $this->successStatus);
+    }
+
+    public function getFavorite()
+    {
+        $user = JWTAuth::parseToken()->toUser();
+
+        $user->favorites;
+        $success['success'] = true;
+        $success['customer'] = $user;
+        return response()->json(['response' => $success], $this->successStatus);
+    }
+
+    public function allProduct(Request $request)
+    {
+//        ->with([['likes' => function ($q) {
+//        $q->where('cus_uuid', JWTAuth::parseToken()->toUser()->cus_uuid );
+//        }]])
+        //$user = JWTAuth::parseToken()->toUser();
+        $search = $request->get('search');
+
+        $products = [];
+
+        if ($search) {
+            $products = Product::where('name', 'like', "%" . $search . "%")
+                ->orwhere('price', 'like', "%" . $search . "%")
+                ->with('category')
+                ->with('likes')
+                ->get();
+        } else {
+            $products = Product::with('category')
+                ->with('likes')
+                ->get();
+        }
+
+        $success['success'] = true;
+        $success['products'] = $products;
+
+        return response()->json(['response' => $success], $this->successStatus);
+    }
+
+    public function logout()
+    {
+        JWTAuth::invalidate(JWTAuth::getToken());
+
+        $success['success'] = true;
+        $success['message'] = 'successfully logout';
+
+        return response()->json(['response' => $success], $this->successStatus);
     }
 }

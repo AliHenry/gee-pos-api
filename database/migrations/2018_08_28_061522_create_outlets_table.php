@@ -16,6 +16,7 @@ class CreateOutletsTable extends Migration
         Schema::create('outlet', function (Blueprint $table) {
             $table->uuid('outlet_uuid');
             $table->uuid('biz_uuid');
+            $table->string('avatar')->nullable();
             $table->string('name');
             $table->string('description')->nullable();
             $table->string('city')->nullable();

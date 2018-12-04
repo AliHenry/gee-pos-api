@@ -75,7 +75,7 @@ class RouteServiceProvider extends ServiceProvider
 
     protected function mapCustomerRoutes()
     {
-        Route::prefix('v1')
+        Route::prefix('customer')
             ->namespace($this->namespace)
             ->group(base_path('routes/customer.php'));
     }

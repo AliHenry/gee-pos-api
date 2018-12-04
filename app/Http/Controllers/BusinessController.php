@@ -16,6 +16,7 @@ class BusinessController extends Controller
     public $successStatus = 200;
 
     public function create(Request $request){
+        dd(Auth::user());
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
             'description' => 'sometimes|required|string',
@@ -74,7 +75,7 @@ class BusinessController extends Controller
 
     public function addRole($outlet){
         $user = Auth::user();
-        $role = Role::where('name', 'superadministrator')->first();
+        $role = Role::where('name', 'Admin')->first();
 
         return $user->role()->attach($role->id, ['user_type' => 'App\User','outlet_uuid' => $outlet->outlet_uuid]);
     }
